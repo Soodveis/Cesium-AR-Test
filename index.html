@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Магнитная карта в AR</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       margin: 0;
@@ -18,12 +18,13 @@
       top: 10px;
       left: 10px;
       z-index: 100;
-      padding: 12px 22px;
-      font-size: 18px;
+      padding: 15px 30px;
+      font-size: 20px;
       background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 8px;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -33,65 +34,53 @@
 
   <script>
     window.CESIUM_BASE_URL = "";
+
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
-    async function initCesium() {
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain(),
+      baseLayerPicker: true
+    });
+
+    Cesium.IonResource.fromAssetId(3264517)
+      .then(resource => Cesium.KmlDataSource.load(resource))
+      .then(dataSource => viewer.dataSources.add(dataSource))
+      .catch(error => console.error('Ошибка загрузки KML:', error));
+
+    document.getElementById('enterAR').addEventListener('click', async () => {
       try {
-        const terrainResource = await Cesium.IonResource.fromAssetId(1);
-        const terrainProvider = new Cesium.CesiumTerrainProvider({ url: terrainResource });
+        const xrSupported = await navigator.xr?.isSessionSupported('immersive-ar');
+        if (!xrSupported) throw new Error("WebXR AR не поддерживается");
 
-        const viewer = new Cesium.Viewer('cesiumContainer', {
-          terrainProvider: terrainProvider,
-          baseLayerPicker: true
+        const session = await navigator.xr.requestSession('immersive-ar', {
+          requiredFeatures: ['local-floor']
         });
 
-        // Загрузка KML-магнитной карты
-        const kmlResource = await Cesium.IonResource.fromAssetId(3264517);
-        const kmlLayer = await Cesium.KmlDataSource.load(kmlResource);
-        viewer.dataSources.add(kmlLayer);
+        const gl = viewer.scene.canvas.getContext('webgl', { xrCompatible: true });
+        const xrGlBinding = new XRWebGLLayer(session, gl);
 
-        // Обработчик кнопки AR
-        document.getElementById('enterAR').addEventListener('click', async () => {
-          try {
-            const xrSupported = await navigator.xr?.isSessionSupported('immersive-ar');
-            if (!xrSupported) throw new Error("WebXR AR не поддерживается");
+        session.updateRenderState({ baseLayer: xrGlBinding });
+        await session.requestReferenceSpace('local-floor');
 
-            const session = await navigator.xr.requestSession('immersive-ar', {
-              requiredFeatures: ['local-floor']
-            });
+        const arSquare = document.createElement('div');
+        arSquare.style.position = 'absolute';
+        arSquare.style.top = '50%';
+        arSquare.style.left = '50%';
+        arSquare.style.width = '200px';
+        arSquare.style.height = '200px';
+        arSquare.style.marginTop = '-100px';
+        arSquare.style.marginLeft = '-100px';
+        arSquare.style.background = 'lime';
+        document.body.appendChild(arSquare);
 
-            const gl = viewer.scene.canvas.getContext('webgl', { xrCompatible: true });
-            const xrGlBinding = new XRWebGLLayer(session, gl);
-
-            session.updateRenderState({ baseLayer: xrGlBinding });
-            await session.requestReferenceSpace('local-floor');
-
-            const arSquare = document.createElement('div');
-            arSquare.style.position = 'absolute';
-            arSquare.style.top = '50%';
-            arSquare.style.left = '50%';
-            arSquare.style.width = '200px';
-            arSquare.style.height = '200px';
-            arSquare.style.marginTop = '-100px';
-            arSquare.style.marginLeft = '-100px';
-            arSquare.style.background = 'lime';
-            document.body.appendChild(arSquare);
-
-            session.addEventListener('end', () => {
-              document.body.removeChild(arSquare);
-            });
-          } catch (e) {
-            alert('Ошибка запуска AR: ' + e.message);
-            console.error(e);
-          }
+        session.addEventListener('end', () => {
+          document.body.removeChild(arSquare);
         });
-
-      } catch (err) {
-        console.error("Ошибка инициализации Cesium:", err);
+      } catch (e) {
+        alert('Ошибка запуска AR: ' + e.message);
+        console.error(e);
       }
-    }
-
-    initCesium();
+    });
   </script>
 </body>
 </html>

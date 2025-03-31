@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Магнитная карта в AR</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+  <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       margin: 0;
@@ -33,6 +33,9 @@
   <button id="enterAR">Перейти в AR</button>
 
   <script>
+    window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/";
+    window.CESIUM_WORKER_DISABLE_DEFAULT = true;
+
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
     const viewer = new Cesium.Viewer('cesiumContainer', {

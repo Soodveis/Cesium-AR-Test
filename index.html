@@ -1,27 +1,29 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cesium AR Test</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+  <meta charset="UTF-8">
+  <title>Магнитная карта в AR</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
-      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
     }
     #enterAR {
       position: absolute;
       top: 10px;
       left: 10px;
       z-index: 100;
+      padding: 10px 20px;
+      font-size: 18px;
       background-color: #007bff;
       color: white;
       border: none;
-      padding: 12px 18px;
-      font-size: 18px;
-      font-weight: bold;
-      border-radius: 6px;
-      cursor: pointer;
+      border-radius: 5px;
     }
   </style>
 </head>
@@ -31,42 +33,53 @@
 
   <script>
     window.CESIUM_BASE_URL = "";
+
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
     const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain(),
-      baseLayerPicker: true,
+      terrainProvider: new Cesium.CesiumTerrainProvider({
+        url: Cesium.IonResource.fromAssetId(1)
+      }),
+      baseLayerPicker: true
     });
 
-    // Загрузка KML слоя
     Cesium.IonResource.fromAssetId(3264517)
       .then(resource => Cesium.KmlDataSource.load(resource))
-      .then(dataSource => {
-        viewer.dataSources.add(dataSource);
-        viewer.zoomTo(dataSource);
-      })
-      .catch(error => {
-        console.error("Ошибка загрузки KML слоя:", error);
-      });
+      .then(dataSource => viewer.dataSources.add(dataSource))
+      .catch(error => console.error('Ошибка загрузки KML:', error));
 
-    // AR Кнопка
-    const enterARButton = document.getElementById("enterAR");
-    enterARButton.addEventListener("click", async () => {
-      if (navigator.xr) {
-        try {
-          const session = await navigator.xr.requestSession("immersive-ar", {
-            requiredFeatures: ["local-floor"]
-          });
+    document.getElementById('enterAR').addEventListener('click', async () => {
+      try {
+        const xrSupported = await navigator.xr?.isSessionSupported('immersive-ar');
+        if (!xrSupported) throw new Error("WebXR AR не поддерживается");
 
-          const gl = document.createElement("canvas").getContext("webgl", {xrCompatible: true});
-          await session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        const session = await navigator.xr.requestSession('immersive-ar', {
+          requiredFeatures: ['local-floor']
+        });
 
-          session.requestAnimationFrame(() => {});
-        } catch (err) {
-          alert("Ошибка запуска AR: " + err.message);
-        }
-      } else {
-        alert("WebXR не поддерживается на этом устройстве.");
+        const gl = viewer.scene.canvas.getContext('webgl', { xrCompatible: true });
+        const xrGlBinding = new XRWebGLLayer(session, gl);
+
+        session.updateRenderState({ baseLayer: xrGlBinding });
+        await session.requestReferenceSpace('local-floor');
+
+        const arSquare = document.createElement('div');
+        arSquare.style.position = 'absolute';
+        arSquare.style.top = '50%';
+        arSquare.style.left = '50%';
+        arSquare.style.width = '200px';
+        arSquare.style.height = '200px';
+        arSquare.style.marginTop = '-100px';
+        arSquare.style.marginLeft = '-100px';
+        arSquare.style.background = 'lime';
+        document.body.appendChild(arSquare);
+
+        session.addEventListener('end', () => {
+          document.body.removeChild(arSquare);
+        });
+      } catch (e) {
+        alert('Ошибка запуска AR: ' + e.message);
+        console.error(e);
       }
     });
   </script>

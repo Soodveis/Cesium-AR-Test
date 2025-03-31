@@ -44,13 +44,18 @@
       Cesium.Ion.defaultAccessToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
+      window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/";
+
       const viewer = new Cesium.Viewer("cesiumContainer", {
         baseLayerPicker: false,
         geocoder: false,
         homeButton: false,
         sceneModePicker: false,
         timeline: false,
-        animation: false
+        animation: false,
+        useDefaultRenderLoop: true,
+        requestRenderMode: false,
+        useLegacyWebpackWorkflow: true
       });
 
       console.log("Цезий загружен");
@@ -74,8 +79,6 @@
             });
             arButton.textContent = "Выйти из AR";
             isARActive = true;
-
-            // Пока просто переключаем fullscreen (в будущем — полноценный AR)
             document.body.requestFullscreen();
           } catch (err) {
             console.error("Ошибка запуска AR:", err);

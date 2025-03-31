@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Магнитная карта в AR</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       margin: 0;
@@ -33,63 +33,57 @@
   <button id="enterAR">Перейти в AR</button>
 
   <script>
-    window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/";
+    window.CESIUM_BASE_URL = "https://unpkg.com/cesium@1.109/Build/Cesium/";
+
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
-    async function init() {
-      const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
-      const viewer = new Cesium.Viewer('cesiumContainer', {
-        terrainProvider,
-        baseLayerPicker: true
-      });
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain(),
+      baseLayerPicker: true
+    });
 
-      // Загрузка KML
-      Cesium.IonResource.fromAssetId(3264517)
-        .then(resource => Cesium.KmlDataSource.load(resource))
-        .then(dataSource => viewer.dataSources.add(dataSource))
-        .catch(error => console.error('Ошибка загрузки KML:', error));
+    Cesium.IonResource.fromAssetId(3264517)
+      .then(resource => Cesium.KmlDataSource.load(resource))
+      .then(dataSource => viewer.dataSources.add(dataSource))
+      .catch(error => console.error('Ошибка загрузки KML:', error));
 
-      // Кнопка перехода в AR
-      document.getElementById('enterAR').addEventListener('click', async () => {
-        try {
-          if (!navigator.xr) throw new Error("WebXR не поддерживается браузером");
+    document.getElementById('enterAR').addEventListener('click', async () => {
+      try {
+        if (!navigator.xr) throw new Error("WebXR не поддерживается браузером");
 
-          const isSupported = await navigator.xr.isSessionSupported('immersive-ar');
-          if (!isSupported) throw new Error("WebXR AR не поддерживается");
+        const isSupported = await navigator.xr.isSessionSupported('immersive-ar');
+        if (!isSupported) throw new Error("WebXR AR не поддерживается");
 
-          const session = await navigator.xr.requestSession('immersive-ar', {
-            requiredFeatures: ['local-floor']
-          });
+        const session = await navigator.xr.requestSession('immersive-ar', {
+          requiredFeatures: ['local-floor']
+        });
 
-          const gl = viewer.scene.canvas.getContext('webgl', { xrCompatible: true });
-          await gl.makeXRCompatible?.();
-          const xrGlBinding = new XRWebGLLayer(session, gl);
+        const gl = viewer.scene.canvas.getContext('webgl', { xrCompatible: true });
+        await gl.makeXRCompatible?.();
+        const xrGlBinding = new XRWebGLLayer(session, gl);
 
-          session.updateRenderState({ baseLayer: xrGlBinding });
-          await session.requestReferenceSpace('local-floor');
+        session.updateRenderState({ baseLayer: xrGlBinding });
+        await session.requestReferenceSpace('local-floor');
 
-          const arSquare = document.createElement('div');
-          arSquare.style.position = 'absolute';
-          arSquare.style.top = '50%';
-          arSquare.style.left = '50%';
-          arSquare.style.width = '200px';
-          arSquare.style.height = '200px';
-          arSquare.style.marginTop = '-100px';
-          arSquare.style.marginLeft = '-100px';
-          arSquare.style.background = 'lime';
-          document.body.appendChild(arSquare);
+        const arSquare = document.createElement('div');
+        arSquare.style.position = 'absolute';
+        arSquare.style.top = '50%';
+        arSquare.style.left = '50%';
+        arSquare.style.width = '200px';
+        arSquare.style.height = '200px';
+        arSquare.style.marginTop = '-100px';
+        arSquare.style.marginLeft = '-100px';
+        arSquare.style.background = 'lime';
+        document.body.appendChild(arSquare);
 
-          session.addEventListener('end', () => {
-            document.body.removeChild(arSquare);
-          });
-        } catch (e) {
-          alert('Ошибка запуска AR: ' + e.message);
-          console.error(e);
-        }
-      });
-    }
-
-    init();
+        session.addEventListener('end', () => {
+          document.body.removeChild(arSquare);
+        });
+      } catch (e) {
+        alert('Ошибка запуска AR: ' + e.message);
+        console.error(e);
+      }
+    });
   </script>
 </body>
 </html>

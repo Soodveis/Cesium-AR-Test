@@ -1,94 +1,91 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <title>Cesium AR Magnetism</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
-  <style>
-    html, body, #cesiumContainer {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background: #000;
-    }
-    #enterAR {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      z-index: 999;
-      padding: 12px 20px;
-      font-size: 18px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div id="cesiumContainer"></div>
-  <button id="enterAR">Перейти в AR</button>
-
-  <script>
-    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU';
-
-    const viewer = new Cesium.Viewer('cesiumContainer', {
-      terrainProvider: Cesium.createWorldTerrain?.(),
-      timeline: false,
-      animation: false,
-      baseLayerPicker: false,
-      sceneModePicker: false
-    });
-
-    // Загружаем KML
-    async function loadKML() {
-      try {
-        const resource = await Cesium.IonResource.fromAssetId(3264517);
-        const kmlLayer = await Cesium.KmlDataSource.load(resource, {
-          camera: viewer.scene.camera,
-          canvas: viewer.scene.canvas
-        });
-        viewer.dataSources.add(kmlLayer);
-        viewer.flyTo(kmlLayer);
-      } catch (error) {
-        console.error("Ошибка при загрузке KML:", error);
-      }
-    }
-    loadKML();
-
-    // WebXR AR session
-    const enterARButton = document.getElementById("enterAR");
-    enterARButton.addEventListener("click", async () => {
-      if (!navigator.xr) {
-        alert("WebXR не поддерживается на этом устройстве.");
-        return;
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Cesium AR Viewer</title>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+    <link
+      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
+      rel="stylesheet"
+    />
+    <style>
+      html,
+      body,
+      #cesiumContainer {
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
       }
 
-      try {
-        const supported = await navigator.xr.isSessionSupported('immersive-ar');
-        if (!supported) {
-          alert("AR не поддерживается на этом устройстве.");
-          return;
+      #enterAR {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        z-index: 10;
+        padding: 12px 20px;
+        font-size: 18px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="cesiumContainer"></div>
+    <button id="enterAR">Перейти в AR</button>
+
+    <script>
+      console.log("Cesium.js загружается...");
+
+      Cesium.Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
+
+      const viewer = new Cesium.Viewer("cesiumContainer", {
+        baseLayerPicker: false,
+        geocoder: false,
+        homeButton: false,
+        sceneModePicker: false,
+        timeline: false,
+        animation: false
+      });
+
+      console.log("Цезий загружен");
+
+      let isARActive = false;
+      const arButton = document.getElementById("enterAR");
+
+      arButton.addEventListener("click", async () => {
+        if (!isARActive) {
+          if (navigator.xr && navigator.xr.isSessionSupported) {
+            const supported = await navigator.xr.isSessionSupported("immersive-ar");
+            if (!supported) {
+              alert("Ваше устройство не поддерживает WebXR AR.");
+              return;
+            }
+          }
+
+          try {
+            const session = await navigator.xr.requestSession("immersive-ar", {
+              requiredFeatures: ["local-floor"]
+            });
+            arButton.textContent = "Выйти из AR";
+            isARActive = true;
+
+            // Пока просто переключаем fullscreen (в будущем — полноценный AR)
+            document.body.requestFullscreen();
+          } catch (err) {
+            console.error("Ошибка запуска AR:", err);
+          }
+        } else {
+          isARActive = false;
+          arButton.textContent = "Перейти в AR";
+          document.exitFullscreen();
         }
-
-        const session = await navigator.xr.requestSession('immersive-ar', {
-          requiredFeatures: ['local-floor']
-        });
-
-        viewer.scene.useWebXR = true;
-        viewer.scene.xrSession = session;
-
-        viewer.scene.requestRender(); // Принудительный ререндер
-
-      } catch (err) {
-        console.error("Ошибка при запуске AR:", err);
-        alert("Не удалось запустить AR: " + err.message);
-      }
-    });
-  </script>
-</body>
+      });
+    </script>
+  </body>
 </html>

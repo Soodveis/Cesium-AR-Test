@@ -2,90 +2,80 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Cesium AR Test</title>
+  <title>AR Cesium Demo</title>
   <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
   <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
-      background-color: black;
     }
-    #enterAR {
+    #arButton {
       position: absolute;
       top: 10px;
       left: 10px;
-      z-index: 10;
-      font-size: 18px;
-      padding: 12px 20px;
-      background: #007bff;
+      z-index: 5;
+      padding: 14px 24px;
+      font-size: 20px;
+      background-color: #007bff;
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 6px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
   <div id="cesiumContainer"></div>
-  <button id="enterAR">Перейти в AR</button>
+  <button id="arButton">Перейти в AR</button>
 
   <script>
     Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
-    const viewer = new Cesium.Viewer('cesiumContainer', {
-      useDefaultRenderLoop: true,
-      shouldAnimate: true
+    const viewer = new Cesium.Viewer("cesiumContainer", {
+      terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+      baseLayerPicker: true
     });
 
-    // Загрузка KML слоя с Cesium Ion (замени ID на свой)
-    const assetId = 3264481; // пример ID магнитной карты
+    // Загрузка KML магнитной карты
+    Cesium.IonResource.fromAssetId(3264517)
+      .then((resource) => Cesium.KmlDataSource.load(resource))
+      .then((dataSource) => viewer.dataSources.add(dataSource))
+      .catch((error) => console.error("Ошибка загрузки KML:", error));
 
-    Cesium.IonResource.fromAssetId(assetId)
-      .then(resource => Cesium.KmlDataSource.load(resource))
-      .then(dataSource => viewer.dataSources.add(dataSource))
-      .catch(error => console.error('Ошибка загрузки KML:', error));
+    // AR-функционал
+    document.getElementById("arButton").addEventListener("click", async () => {
+      if (!navigator.xr) {
+        alert("WebXR не поддерживается на этом устройстве.");
+        return;
+      }
 
-    // AR запуск
-    document.getElementById('enterAR').addEventListener('click', async () => {
-      if (navigator.xr && await navigator.xr.isSessionSupported('immersive-ar')) {
-        try {
-          const session = await navigator.xr.requestSession('immersive-ar', {
-            requiredFeatures: ['hit-test', 'dom-overlay'],
-            domOverlay: { root: document.body }
-          });
+      try {
+        const session = await navigator.xr.requestSession("immersive-ar", {
+          requiredFeatures: ["local"]
+        });
 
-          const canvas = document.createElement('canvas');
-          document.body.appendChild(canvas);
-          const gl = canvas.getContext('webgl', { xrCompatible: true });
+        const canvas = document.createElement("canvas");
+        document.body.appendChild(canvas);
+        const gl = canvas.getContext("webgl", { xrCompatible: true });
 
-          const xrRefSpace = await session.requestReferenceSpace('local');
-          const xrViewerSpace = await session.requestReferenceSpace('viewer');
-          const viewerHitTestSource = await session.requestHitTestSource({ space: xrViewerSpace });
+        await session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
 
-          session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+        session.addEventListener("end", () => {
+          document.body.removeChild(canvas);
+        });
 
-          session.requestAnimationFrame(function onXRFrame(time, frame) {
-            session.requestAnimationFrame(onXRFrame);
-            const pose = frame.getViewerPose(xrRefSpace);
-            if (pose) {
-              // Здесь можно добавить 3D-объекты
-              // Пока просто зелёный квадрат как заглушка
-              const div = document.createElement('div');
-              div.style.position = 'absolute';
-              div.style.top = '50%';
-              div.style.left = '50%';
-              div.style.transform = 'translate(-50%, -50%)';
-              div.style.width = '200px';
-              div.style.height = '200px';
-              div.style.backgroundColor = 'lime';
-              document.body.appendChild(div);
-            }
-          });
-        } catch (error) {
-          alert('Ошибка запуска AR: ' + error.message);
-        }
-      } else {
-        alert('WebXR AR не поддерживается на этом устройстве');
+        const refSpace = await session.requestReferenceSpace("local");
+
+        session.requestAnimationFrame((time, frame) => {
+          const pose = frame.getViewerPose(refSpace);
+          if (pose) {
+            const ctx = canvas.getContext("2d");
+            ctx.fillStyle = "lime";
+            ctx.fillRect(100, 100, 200, 200);
+          }
+        });
+      } catch (e) {
+        alert("Ошибка запуска AR: " + e.message);
       }
     });
   </script>

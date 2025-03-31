@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -45,18 +45,19 @@
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
       const viewer = new Cesium.Viewer("cesiumContainer", {
-        baseLayerPicker: false,
+        terrainProvider: Cesium.createWorldTerrain(),
+        baseLayerPicker: true,
         geocoder: false,
         homeButton: false,
         sceneModePicker: false,
         timeline: false,
         animation: false,
-        // terrainProvider: Cesium.createWorldTerrain(), // отключим пока
       });
 
       console.log("Цезий загружен");
 
       let isARActive = false;
+      let xrSession = null;
       const arButton = document.getElementById("enterAR");
 
       arButton.addEventListener("click", async () => {
@@ -70,21 +71,27 @@
           }
 
           try {
-            const session = await navigator.xr.requestSession("immersive-ar", {
+            xrSession = await navigator.xr.requestSession("immersive-ar", {
               requiredFeatures: ["local-floor"]
             });
             arButton.textContent = "Выйти из AR";
             isARActive = true;
-
-            // Пока просто включаем fullscreen
-            document.body.requestFullscreen();
+            await document.body.requestFullscreen();
+            console.log("AR сессия запущена");
           } catch (err) {
             console.error("Ошибка запуска AR:", err);
           }
         } else {
           isARActive = false;
           arButton.textContent = "Перейти в AR";
-          document.exitFullscreen();
+          if (xrSession) {
+            await xrSession.end();
+            xrSession = null;
+          }
+          if (document.fullscreenElement) {
+            await document.exitFullscreen();
+          }
+          console.log("AR сессия завершена");
         }
       });
     </script>

@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Магнитная карта в AR</title>
-  <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
-  <link href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       margin: 0;
@@ -49,14 +49,17 @@
 
     document.getElementById('enterAR').addEventListener('click', async () => {
       try {
-        const xrSupported = await navigator.xr?.isSessionSupported('immersive-ar');
-        if (!xrSupported) throw new Error("WebXR AR не поддерживается");
+        if (!navigator.xr) throw new Error("WebXR не поддерживается браузером");
+
+        const isSupported = await navigator.xr.isSessionSupported('immersive-ar');
+        if (!isSupported) throw new Error("WebXR AR не поддерживается");
 
         const session = await navigator.xr.requestSession('immersive-ar', {
           requiredFeatures: ['local-floor']
         });
 
         const gl = viewer.scene.canvas.getContext('webgl', { xrCompatible: true });
+        await gl.makeXRCompatible?.();
         const xrGlBinding = new XRWebGLLayer(session, gl);
 
         session.updateRenderState({ baseLayer: xrGlBinding });

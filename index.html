@@ -1,62 +1,50 @@
 <!DOCTYPE html>
-<html lang="ru">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Cesium Minimal</title>
-    <script src="https://unpkg.com/cesium@1.109.0/Build/Cesium/Cesium.js"></script>
-    <link
-      href="https://unpkg.com/cesium@1.109.0/Build/Cesium/Widgets/widgets.css"
-      rel="stylesheet"
-    />
-    <style>
-      html,
-      body,
-      #cesiumContainer {
-        width: 100%;
-        height: 100%;
-        margin: 0;
-        padding: 0;
-        overflow: hidden;
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Magnetism KML Viewer</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <style>
+    html, body, #cesiumContainer {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <div id="cesiumContainer"></div>
+  <script>
+    // Устанавливаем токен доступа Cesium ion
+    Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI1NDgwZmY4MS0wYjJjLTQwZDAtYjgxMC0wNmU0OTBiMzNjNzEiLCJpZCI6Mjg4NjQ5LCJpYXQiOjE3NDMxNTEzNjV9.78SOshFiLo1g6VT_K3cUMbL3Cpcp8GMTRcCP1aQfs_Q';
+
+    // Инициализация глобуса
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      terrainProvider: Cesium.createWorldTerrain?.() || undefined, // Фикс для версии 1.111+
+      timeline: true,
+      animation: true
+    });
+
+    // Функция загрузки KML
+    async function loadKML() {
+      try {
+        const resource = await Cesium.IonResource.fromAssetId(3264457);
+        const kmlLayer = await Cesium.KmlDataSource.load(resource, {
+          camera: viewer.scene.camera,
+          canvas: viewer.scene.canvas
+        });
+        viewer.dataSources.add(kmlLayer);
+        viewer.flyTo(kmlLayer);
+      } catch (error) {
+        console.error("Ошибка при загрузке KML:", error);
       }
+    }
 
-      #enterAR {
-        position: absolute;
-        top: 10px;
-        left: 10px;
-        z-index: 10;
-        padding: 12px 20px;
-        font-size: 18px;
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-      }
-    </style>
-  </head>
-  <body>
-    <div id="cesiumContainer"></div>
-    <button id="enterAR">Перейти в AR</button>
-
-    <script>
-      console.log("Cesium.js загружается...");
-      Cesium.Ion.defaultAccessToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
-
-      const viewer = new Cesium.Viewer("cesiumContainer", {
-        baseLayerPicker: false,
-        geocoder: false,
-        homeButton: false,
-        sceneModePicker: false,
-        timeline: false,
-        animation: false,
-      });
-
-      console.log("Цезий загружен");
-
-      document.getElementById("enterAR").addEventListener("click", () => {
-        alert("AR пока не подключён");
-      });
-    </script>
-  </body>
+    loadKML();
+  </script>
+</body>
 </html>

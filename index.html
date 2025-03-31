@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Магнитная карта в AR</title>
-  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
-  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+  <script src="https://unpkg.com/cesium@1.109/Build/CesiumUnminified/Cesium.js"></script>
+  <link href="https://unpkg.com/cesium@1.109/Build/CesiumUnminified/Widgets/widgets.css" rel="stylesheet">
   <style>
     html, body, #cesiumContainer {
       margin: 0;
@@ -33,19 +33,23 @@
   <button id="enterAR">Перейти в AR</button>
 
   <script>
-    window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/";
-    console.log("Cesium.js загружается...");
+    window.CESIUM_BASE_URL = "https://unpkg.com/cesium@1.109/Build/CesiumUnminified/";
 
-    window.onload = async function () {
+    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
+
+    async function initCesium() {
+      console.log("Cesium.js загружается...");
       try {
-        console.log("Цезий загружен");
-
-        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
+        const terrain = await Cesium.IonResource.fromAssetId(1).then(resource =>
+          new Cesium.CesiumTerrainProvider({ url: resource })
+        );
 
         const viewer = new Cesium.Viewer('cesiumContainer', {
-          terrainProvider: Cesium.createWorldTerrain(),
+          terrainProvider: terrain,
           baseLayerPicker: true
         });
+
+        console.log("Цезий загружен");
 
         Cesium.IonResource.fromAssetId(3264517)
           .then(resource => Cesium.KmlDataSource.load(resource))
@@ -89,10 +93,12 @@
             console.error(e);
           }
         });
-      } catch (err) {
-        console.error("Ошибка инициализации Cesium:", err);
+      } catch (e) {
+        console.error("Ошибка инициализации Cesium:", e);
       }
     }
+
+    window.onload = initCesium;
   </script>
 </body>
 </html>

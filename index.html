@@ -2,86 +2,92 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AR Scene</title>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/build/three.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/three@0.150.1/examples/jsm/webxr/ARButton.js"></script>
+  <title>Cesium AR Test</title>
+  <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+  <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
   <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      width: 100%;
-      height: 100%;
+    html, body, #cesiumContainer {
+      width: 100%; height: 100%; margin: 0; padding: 0; overflow: hidden;
+      background-color: black;
     }
-    #ar-button {
+    #enterAR {
       position: absolute;
       top: 10px;
       left: 10px;
-      padding: 15px 25px;
-      font-size: 20px;
-      z-index: 999;
-      background-color: #007BFF;
+      z-index: 10;
+      font-size: 18px;
+      padding: 12px 20px;
+      background: #007bff;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <button id="ar-button">Перейти в AR</button>
+  <div id="cesiumContainer"></div>
+  <button id="enterAR">Перейти в AR</button>
+
   <script>
-    let camera, scene, renderer;
+    Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
-    if (navigator.xr) {
-      navigator.xr.isSessionSupported('immersive-ar').then((supported) => {
-        if (!supported) {
-          document.getElementById('ar-button').style.display = 'none';
-        }
-      });
-    } else {
-      alert("WebXR не поддерживается на этом устройстве.");
-    }
-
-    document.getElementById('ar-button').addEventListener('click', async () => {
-      try {
-        const session = await navigator.xr.requestSession('immersive-ar', {
-          requiredFeatures: ['hit-test']
-        });
-
-        setupWebXR(session);
-      } catch (e) {
-        alert("Ошибка запуска AR: " + e.message);
-      }
+    const viewer = new Cesium.Viewer('cesiumContainer', {
+      useDefaultRenderLoop: true,
+      shouldAnimate: true
     });
 
-    function setupWebXR(session) {
-      const canvas = document.createElement('canvas');
-      document.body.appendChild(canvas);
+    // Загрузка KML слоя с Cesium Ion (замени ID на свой)
+    const assetId = 3264481; // пример ID магнитной карты
 
-      renderer = new THREE.WebGLRenderer({ canvas, alpha: true });
-      renderer.xr.enabled = true;
-      renderer.setSize(window.innerWidth, window.innerHeight);
-      renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.xr.setSession(session);
+    Cesium.IonResource.fromAssetId(assetId)
+      .then(resource => Cesium.KmlDataSource.load(resource))
+      .then(dataSource => viewer.dataSources.add(dataSource))
+      .catch(error => console.error('Ошибка загрузки KML:', error));
 
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.01, 20);
+    // AR запуск
+    document.getElementById('enterAR').addEventListener('click', async () => {
+      if (navigator.xr && await navigator.xr.isSessionSupported('immersive-ar')) {
+        try {
+          const session = await navigator.xr.requestSession('immersive-ar', {
+            requiredFeatures: ['hit-test', 'dom-overlay'],
+            domOverlay: { root: document.body }
+          });
 
-      const light = new THREE.HemisphereLight(0xffffff, 0xbbbbff, 1);
-      light.position.set(0.5, 1, 0.25);
-      scene.add(light);
+          const canvas = document.createElement('canvas');
+          document.body.appendChild(canvas);
+          const gl = canvas.getContext('webgl', { xrCompatible: true });
 
-      const geometry = new THREE.BoxGeometry(0.2, 0.2, 0.2);
-      const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-      const cube = new THREE.Mesh(geometry, material);
-      cube.position.set(0, 0, -0.5);
-      scene.add(cube);
+          const xrRefSpace = await session.requestReferenceSpace('local');
+          const xrViewerSpace = await session.requestReferenceSpace('viewer');
+          const viewerHitTestSource = await session.requestHitTestSource({ space: xrViewerSpace });
 
-      renderer.setAnimationLoop(() => {
-        renderer.render(scene, camera);
-      });
-    }
+          session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+          session.requestAnimationFrame(function onXRFrame(time, frame) {
+            session.requestAnimationFrame(onXRFrame);
+            const pose = frame.getViewerPose(xrRefSpace);
+            if (pose) {
+              // Здесь можно добавить 3D-объекты
+              // Пока просто зелёный квадрат как заглушка
+              const div = document.createElement('div');
+              div.style.position = 'absolute';
+              div.style.top = '50%';
+              div.style.left = '50%';
+              div.style.transform = 'translate(-50%, -50%)';
+              div.style.width = '200px';
+              div.style.height = '200px';
+              div.style.backgroundColor = 'lime';
+              document.body.appendChild(div);
+            }
+          });
+        } catch (error) {
+          alert('Ошибка запуска AR: ' + error.message);
+        }
+      } else {
+        alert('WebXR AR не поддерживается на этом устройстве');
+      }
+    });
   </script>
 </body>
 </html>

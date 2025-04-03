@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesiumjs.org/releases/1.109/Build/CesiumUnminified/Cesium.js"></script>
+    <script src="https://unpkg.com/cesium/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://cesiumjs.org/releases/1.109/Build/CesiumUnminified/Widgets/widgets.css"
+      href="https://unpkg.com/cesium/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -41,8 +41,6 @@
     <script>
       console.log("Cesium.js загружается...");
 
-      window.CESIUM_BASE_URL = "https://cesiumjs.org/releases/1.109/Build/CesiumUnminified/";
-
       window.addEventListener("load", () => {
         if (typeof Cesium === "undefined") {
           console.error("Cesium не определен. Проверьте подключение скрипта Cesium.js.");
@@ -60,7 +58,6 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          terrainProvider: Cesium.createWorldTerrain()
         });
 
         console.log("Цезий загружен");

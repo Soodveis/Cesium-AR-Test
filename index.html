@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+    <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -44,18 +44,16 @@
       Cesium.Ion.defaultAccessToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
 
-      window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/";
-
       const viewer = new Cesium.Viewer("cesiumContainer", {
+        useDefaultRenderLoop: true,
+        requestRenderMode: false,
+        shouldAnimate: true,
         baseLayerPicker: false,
         geocoder: false,
         homeButton: false,
         sceneModePicker: false,
         timeline: false,
-        animation: false,
-        useDefaultRenderLoop: true,
-        requestRenderMode: false
-        // terrainProvider: Cesium.createWorldTerrain() // удалено для совместимости
+        animation: false
       });
 
       console.log("Цезий загружен");

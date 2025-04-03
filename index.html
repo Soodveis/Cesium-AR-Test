@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://unpkg.com/cesium@1.109/Build/Cesium/Cesium.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -41,51 +41,58 @@
     <script>
       console.log("Cesium.js загружается...");
 
-      Cesium.Ion.defaultAccessToken =
-        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
+      window.CESIUM_BASE_URL = "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/";
 
-      const viewer = new Cesium.Viewer("cesiumContainer", {
-        useDefaultRenderLoop: true,
-        requestRenderMode: false,
-        shouldAnimate: true,
-        baseLayerPicker: false,
-        geocoder: false,
-        homeButton: false,
-        sceneModePicker: false,
-        timeline: false,
-        animation: false
-      });
-
-      console.log("Цезий загружен");
-
-      let isARActive = false;
-      const arButton = document.getElementById("enterAR");
-
-      arButton.addEventListener("click", async () => {
-        if (!isARActive) {
-          if (navigator.xr && navigator.xr.isSessionSupported) {
-            const supported = await navigator.xr.isSessionSupported("immersive-ar");
-            if (!supported) {
-              alert("Ваше устройство не поддерживает WebXR AR.");
-              return;
-            }
-          }
-
-          try {
-            const session = await navigator.xr.requestSession("immersive-ar", {
-              requiredFeatures: ["local-floor"]
-            });
-            arButton.textContent = "Выйти из AR";
-            isARActive = true;
-            document.body.requestFullscreen();
-          } catch (err) {
-            console.error("Ошибка запуска AR:", err);
-          }
-        } else {
-          isARActive = false;
-          arButton.textContent = "Перейти в AR";
-          document.exitFullscreen();
+      window.addEventListener("load", () => {
+        if (typeof Cesium === "undefined") {
+          console.error("Cesium не определен. Проверьте подключение скрипта Cesium.js.");
+          return;
         }
+
+        Cesium.Ion.defaultAccessToken =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
+
+        const viewer = new Cesium.Viewer("cesiumContainer", {
+          shouldAnimate: true,
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          timeline: false,
+          animation: false
+        });
+
+        console.log("Цезий загружен");
+
+        let isARActive = false;
+        const arButton = document.getElementById("enterAR");
+
+        arButton.addEventListener("click", async () => {
+          if (!isARActive) {
+            if (navigator.xr && navigator.xr.isSessionSupported) {
+              const supported = await navigator.xr.isSessionSupported("immersive-ar");
+              if (!supported) {
+                alert("Ваше устройство не поддерживает WebXR AR.");
+                return;
+              }
+            }
+
+            try {
+              const session = await navigator.xr.requestSession("immersive-ar", {
+                requiredFeatures: ["local-floor"]
+              });
+              arButton.textContent = "Выйти из AR";
+              isARActive = true;
+              document.body.requestFullscreen();
+            } catch (err) {
+              console.error("Ошибка запуска AR:", err);
+            }
+          } else {
+            isARActive = false;
+            arButton.textContent = "Перейти в AR";
+            document.exitFullscreen();
+          }
+        });
       });
     </script>
   </body>

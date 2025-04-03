@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://unpkg.com/cesium@1.109.0/Build/Cesium/Cesium.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://unpkg.com/cesium@1.109.0/Build/Cesium/Widgets/widgets.css"
+      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -17,6 +17,7 @@
         margin: 0;
         padding: 0;
         overflow: hidden;
+        background: black;
       }
 
       #enterAR {
@@ -41,7 +42,7 @@
     <script>
       console.log("Cesium.js загружается...");
 
-      window.addEventListener("load", () => {
+      window.addEventListener("load", async () => {
         if (typeof Cesium === "undefined") {
           console.error("Cesium не определен. Проверьте подключение скрипта Cesium.js.");
           return;
@@ -62,50 +63,49 @@
 
         console.log("Цезий загружен");
 
-        let isARActive = false;
+        // Загрузка магнитной карты (KML)
+        const kmlUrl = Cesium.IonResource.fromAssetId(3264517);
+        viewer.dataSources.add(Cesium.KmlDataSource.load(kmlUrl));
+
+        const scene = viewer.scene;
+
         const arButton = document.getElementById("enterAR");
+        let isARActive = false;
+        let xrSession = null;
 
         arButton.addEventListener("click", async () => {
           if (!isARActive) {
-            if (navigator.xr && navigator.xr.isSessionSupported) {
-              const supported = await navigator.xr.isSessionSupported("immersive-ar");
-              if (!supported) {
-                alert("Ваше устройство не поддерживает WebXR AR.");
-                return;
-              }
+            if (!navigator.xr) {
+              alert("WebXR не поддерживается этим браузером/устройством.");
+              return;
+            }
+
+            const supported = await navigator.xr.isSessionSupported("immersive-ar");
+            if (!supported) {
+              alert("Ваше устройство не поддерживает WebXR AR.");
+              return;
             }
 
             try {
-              const session = await navigator.xr.requestSession("immersive-ar", {
-                requiredFeatures: ["local-floor"]
+              xrSession = await navigator.xr.requestSession("immersive-ar", {
+                requiredFeatures: ["local", "hit-test"]
               });
-              const canvas = document.createElement("canvas");
-              document.body.appendChild(canvas);
-              const gl = canvas.getContext("webgl", { xrCompatible: true });
 
-              await session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+              // Здесь должна быть интеграция WebXR и Cesium (возможно, через кастомный рендер)
+              console.log("AR-сессия активна, но интеграция Cesium с WebXR требует реализации");
 
-              const refSpace = await session.requestReferenceSpace("local-floor");
-              arButton.textContent = "Выйти из AR";
               isARActive = true;
-
-              session.requestAnimationFrame(function onXRFrame(time, frame) {
-                const session = frame.session;
-                session.requestAnimationFrame(onXRFrame);
-
-                const pose = frame.getViewerPose(refSpace);
-                if (pose) {
-                  gl.clearColor(0.0, 0.0, 0.0, 1.0);
-                  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-                }
-              });
-            } catch (err) {
-              console.error("Ошибка запуска AR:", err);
+              arButton.textContent = "Выйти из AR";
+            } catch (e) {
+              console.error("Ошибка при запуске AR:", e);
             }
           } else {
+            if (xrSession) {
+              await xrSession.end();
+              xrSession = null;
+            }
             isARActive = false;
             arButton.textContent = "Перейти в AR";
-            document.exitFullscreen();
           }
         });
       });

@@ -64,8 +64,13 @@
         console.log("Цезий загружен");
 
         // Загрузка магнитной карты (KML)
-        const kmlUrl = Cesium.IonResource.fromAssetId(3264517);
-        viewer.dataSources.add(Cesium.KmlDataSource.load(kmlUrl));
+        try {
+          const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);
+          const kml = await Cesium.KmlDataSource.load(kmlUrl);
+          viewer.dataSources.add(kml);
+        } catch (error) {
+          console.error("Ошибка загрузки KML:", error);
+        }
 
         const scene = viewer.scene;
 

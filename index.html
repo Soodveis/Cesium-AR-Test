@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Cesium.js"></script>
+    <script src="https://unpkg.com/cesium@1.109.0/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.113/Build/Cesium/Widgets/widgets.css"
+      href="https://unpkg.com/cesium@1.109.0/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -79,9 +79,26 @@
               const session = await navigator.xr.requestSession("immersive-ar", {
                 requiredFeatures: ["local-floor"]
               });
+              const canvas = document.createElement("canvas");
+              document.body.appendChild(canvas);
+              const gl = canvas.getContext("webgl", { xrCompatible: true });
+
+              await session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+
+              const refSpace = await session.requestReferenceSpace("local-floor");
               arButton.textContent = "Выйти из AR";
               isARActive = true;
-              document.body.requestFullscreen();
+
+              session.requestAnimationFrame(function onXRFrame(time, frame) {
+                const session = frame.session;
+                session.requestAnimationFrame(onXRFrame);
+
+                const pose = frame.getViewerPose(refSpace);
+                if (pose) {
+                  gl.clearColor(0.0, 0.0, 0.0, 1.0);
+                  gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+                }
+              });
             } catch (err) {
               console.error("Ошибка запуска AR:", err);
             }

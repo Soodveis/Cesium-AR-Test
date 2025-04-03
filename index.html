@@ -3,9 +3,74 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+    <script type="module">
+      import { Ion, Viewer, IonResource, KmlDataSource } from "https://cdn.jsdelivr.net/npm/cesium@1.109/Source/Cesium.js";
+
+      window.CESIUM_BASE_URL = "https://cdn.jsdelivr.net/npm/cesium@1.109/Source/";
+
+      window.addEventListener("load", async () => {
+        Ion.defaultAccessToken =
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
+
+        const viewer = new Viewer("cesiumContainer", {
+          shouldAnimate: true,
+          baseLayerPicker: false,
+          geocoder: false,
+          homeButton: false,
+          sceneModePicker: false,
+          timeline: false,
+          animation: false,
+        });
+
+        try {
+          const kmlUrl = await IonResource.fromAssetId(3264517);
+          const kml = await KmlDataSource.load(kmlUrl);
+          viewer.dataSources.add(kml);
+        } catch (error) {
+          console.error("Ошибка загрузки KML:", error);
+        }
+
+        const arButton = document.getElementById("enterAR");
+        let isARActive = false;
+        let xrSession = null;
+
+        arButton.addEventListener("click", async () => {
+          if (!isARActive) {
+            if (!navigator.xr) {
+              alert("WebXR не поддерживается этим браузером/устройством.");
+              return;
+            }
+
+            const supported = await navigator.xr.isSessionSupported("immersive-ar");
+            if (!supported) {
+              alert("Ваше устройство не поддерживает WebXR AR.");
+              return;
+            }
+
+            try {
+              xrSession = await navigator.xr.requestSession("immersive-ar", {
+                requiredFeatures: ["local", "hit-test"],
+              });
+
+              console.log("AR-сессия активна (тестовая заглушка)");
+              isARActive = true;
+              arButton.textContent = "Выйти из AR";
+            } catch (e) {
+              console.error("Ошибка при запуске AR:", e);
+            }
+          } else {
+            if (xrSession) {
+              await xrSession.end();
+              xrSession = null;
+            }
+            isARActive = false;
+            arButton.textContent = "Перейти в AR";
+          }
+        });
+      });
+    </script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://cdn.jsdelivr.net/npm/cesium@1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -38,82 +103,5 @@
   <body>
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
-
-    <script>
-      console.log("Cesium.js загружается...");
-
-      window.addEventListener("load", async () => {
-        if (typeof Cesium === "undefined") {
-          console.error("Cesium не определен. Проверьте подключение скрипта Cesium.js.");
-          return;
-        }
-
-        Cesium.Ion.defaultAccessToken =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
-
-        const viewer = new Cesium.Viewer("cesiumContainer", {
-          shouldAnimate: true,
-          baseLayerPicker: false,
-          geocoder: false,
-          homeButton: false,
-          sceneModePicker: false,
-          timeline: false,
-          animation: false,
-        });
-
-        console.log("Цезий загружен");
-
-        // Загрузка магнитной карты (KML)
-        try {
-          const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);
-          const kml = await Cesium.KmlDataSource.load(kmlUrl);
-          viewer.dataSources.add(kml);
-        } catch (error) {
-          console.error("Ошибка загрузки KML:", error);
-        }
-
-        const scene = viewer.scene;
-
-        const arButton = document.getElementById("enterAR");
-        let isARActive = false;
-        let xrSession = null;
-
-        arButton.addEventListener("click", async () => {
-          if (!isARActive) {
-            if (!navigator.xr) {
-              alert("WebXR не поддерживается этим браузером/устройством.");
-              return;
-            }
-
-            const supported = await navigator.xr.isSessionSupported("immersive-ar");
-            if (!supported) {
-              alert("Ваше устройство не поддерживает WebXR AR.");
-              return;
-            }
-
-            try {
-              xrSession = await navigator.xr.requestSession("immersive-ar", {
-                requiredFeatures: ["local", "hit-test"]
-              });
-
-              // Здесь должна быть интеграция WebXR и Cesium (возможно, через кастомный рендер)
-              console.log("AR-сессия активна, но интеграция Cesium с WebXR требует реализации");
-
-              isARActive = true;
-              arButton.textContent = "Выйти из AR";
-            } catch (e) {
-              console.error("Ошибка при запуске AR:", e);
-            }
-          } else {
-            if (xrSession) {
-              await xrSession.end();
-              xrSession = null;
-            }
-            isARActive = false;
-            arButton.textContent = "Перейти в AR";
-          }
-        });
-      });
-    </script>
   </body>
 </html>

@@ -51,6 +51,13 @@
           animation: false,
         });
 
+        // Используем createWorldTerrain только если он существует
+        if (Cesium.createWorldTerrain) {
+          viewer.terrainProvider = Cesium.createWorldTerrain();
+        } else {
+          console.warn("createWorldTerrain не поддерживается в этой версии Cesium.");
+        }
+
         Cesium.IonResource.fromAssetId(3264517)
           .then((resource) => Cesium.KmlDataSource.load(resource))
           .then((kml) => viewer.dataSources.add(kml))

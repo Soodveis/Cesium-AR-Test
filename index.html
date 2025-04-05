@@ -51,9 +51,15 @@
           homeButton: false,
           sceneModePicker: false,
           timeline: false,
-          animation: false,
-          terrainProvider: Cesium.createWorldTerrain(),
+          animation: false
         });
+
+        try {
+          const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+          viewer.terrainProvider = terrainProvider;
+        } catch (terrainError) {
+          console.warn("Ошибка загрузки террейна:", terrainError);
+        }
 
         try {
           const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);
@@ -102,6 +108,7 @@
 
               const onXRFrame = (time, frame) => {
                 xrSession.requestAnimationFrame(onXRFrame);
+                // Здесь можно будет добавить отрисовку объектов
               };
 
               xrSession.requestAnimationFrame(onXRFrame);

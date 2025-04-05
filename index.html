@@ -52,7 +52,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
+          terrainProvider: Cesium.createWorldTerrain(),
         });
 
         try {

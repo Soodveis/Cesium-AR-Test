@@ -39,33 +39,31 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script type="module">
-      import { Ion, Viewer, IonResource, KmlDataSource, CesiumTerrainProvider } from "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Source/Cesium.js";
-
+    <script>
       window.addEventListener("load", async () => {
-        Ion.defaultAccessToken =
+        Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const viewer = new Viewer("cesiumContainer", {
+        const viewer = new Cesium.Viewer("cesiumContainer", {
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
           homeButton: false,
           sceneModePicker: false,
           timeline: false,
-          animation: false
+          animation: false,
         });
 
         try {
-          const terrainProvider = await CesiumTerrainProvider.fromIonAssetId(1);
+          const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
           viewer.terrainProvider = terrainProvider;
         } catch (terrainError) {
           console.warn("Ошибка загрузки террейна:", terrainError);
         }
 
         try {
-          const kmlUrl = await IonResource.fromAssetId(3264517);
-          const kml = await KmlDataSource.load(kmlUrl);
+          const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);
+          const kml = await Cesium.KmlDataSource.load(kmlUrl);
           viewer.dataSources.add(kml);
         } catch (error) {
           console.error("Ошибка загрузки KML:", error);
@@ -110,7 +108,7 @@
 
               const onXRFrame = (time, frame) => {
                 xrSession.requestAnimationFrame(onXRFrame);
-                // Здесь можно будет добавить отрисовку объектов
+                // здесь можно отрисовывать 3D контент
               };
 
               xrSession.requestAnimationFrame(onXRFrame);

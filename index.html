@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
     <script type="module">
-      import { Ion, Viewer, IonImageryProvider, EllipsoidTerrainProvider, createWorldTerrain, KmlDataSource } from "https://unpkg.com/cesium@1.109/build/cesium/Cesium.js";
+      import { Ion, Viewer, IonImageryProvider, EllipsoidTerrainProvider, createWorldTerrain, KmlDataSource, IonResource } from "https://unpkg.com/cesium@1.109/build/esm/Cesium.js";
 
       window.addEventListener("load", function () {
         Ion.defaultAccessToken =
@@ -22,23 +22,16 @@
         });
 
         try {
-          if (createWorldTerrain) {
-            viewer.terrainProvider = createWorldTerrain();
-          } else {
-            console.warn("createWorldTerrain не поддерживается. Устанавливается EllipsoidTerrainProvider.");
-            viewer.terrainProvider = new EllipsoidTerrainProvider();
-          }
+          viewer.terrainProvider = createWorldTerrain();
         } catch (err) {
-          console.error("Ошибка установки рельефа:", err);
+          console.warn("createWorldTerrain не поддерживается. Устанавливается EllipsoidTerrainProvider.");
           viewer.terrainProvider = new EllipsoidTerrainProvider();
         }
 
-        if (Ion && IonResource && IonResource.fromAssetId) {
-          IonResource.fromAssetId(3264517)
-            .then((resource) => KmlDataSource.load(resource))
-            .then((kml) => viewer.dataSources.add(kml))
-            .catch((error) => console.error("Ошибка загрузки KML:", error));
-        }
+        IonResource.fromAssetId(3264517)
+          .then((resource) => KmlDataSource.load(resource))
+          .then((kml) => viewer.dataSources.add(kml))
+          .catch((error) => console.error("Ошибка загрузки KML:", error));
 
         const arButton = document.getElementById("enterAR");
         let isARActive = false;
@@ -98,7 +91,7 @@
       });
     </script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://unpkg.com/cesium@1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>

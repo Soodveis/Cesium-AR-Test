@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/CesiumUnminified/Cesium.js"></script>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/CesiumUnminified/Widgets/widgets.css"
+      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -55,7 +55,7 @@
         });
 
         try {
-          const terrainProvider = await Cesium.createWorldTerrainAsync();
+          const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
           viewer.terrainProvider = terrainProvider;
         } catch (terrainError) {
           console.warn("Ошибка загрузки террейна:", terrainError);

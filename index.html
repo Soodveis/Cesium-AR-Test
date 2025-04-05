@@ -39,12 +39,14 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script>
+    <script type="module">
+      import { Ion, Viewer, IonResource, KmlDataSource, CesiumTerrainProvider } from "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Source/Cesium.js";
+
       window.addEventListener("load", async () => {
-        Cesium.Ion.defaultAccessToken =
+        Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const viewer = new Cesium.Viewer("cesiumContainer", {
+        const viewer = new Viewer("cesiumContainer", {
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
@@ -55,15 +57,15 @@
         });
 
         try {
-          const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+          const terrainProvider = await CesiumTerrainProvider.fromIonAssetId(1);
           viewer.terrainProvider = terrainProvider;
         } catch (terrainError) {
           console.warn("Ошибка загрузки террейна:", terrainError);
         }
 
         try {
-          const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);
-          const kml = await Cesium.KmlDataSource.load(kmlUrl);
+          const kmlUrl = await IonResource.fromAssetId(3264517);
+          const kml = await KmlDataSource.load(kmlUrl);
           viewer.dataSources.add(kml);
         } catch (error) {
           console.error("Ошибка загрузки KML:", error);

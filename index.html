@@ -39,7 +39,7 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script>
+    <script type="text/javascript">
       window.addEventListener("load", async () => {
         Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
@@ -52,7 +52,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          terrainProvider: Cesium.createWorldTerrain()
+          terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
         });
 
         try {
@@ -89,9 +89,7 @@
               const gl = canvas.getContext("webgl", { xrCompatible: true });
               document.body.appendChild(canvas);
 
-              await xrSession.updateRenderState({
-                baseLayer: new XRWebGLLayer(xrSession, gl),
-              });
+              await xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
 
               const refSpace = await xrSession.requestReferenceSpace("local");
 

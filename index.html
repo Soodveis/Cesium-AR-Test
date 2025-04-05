@@ -39,93 +39,93 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script>
-      window.addEventListener("load", async () => {
-        Cesium.Ion.defaultAccessToken =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
+    <script type="module">
+      import { Ion, Viewer, CesiumTerrainProvider, IonResource, KmlDataSource } from "https://cesium.com/downloads/cesiumjs/releases/1.109/Source/Cesium.js";
 
-        const viewer = new Cesium.Viewer("cesiumContainer", {
-          shouldAnimate: true,
-          baseLayerPicker: false,
-          geocoder: false,
-          homeButton: false,
-          sceneModePicker: false,
-          timeline: false,
-          animation: false,
-        });
+      Ion.defaultAccessToken =
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        try {
-          const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
-          viewer.terrainProvider = terrainProvider;
-        } catch (terrainError) {
-          console.warn("Ошибка загрузки террейна:", terrainError);
-        }
+      const viewer = new Viewer("cesiumContainer", {
+        shouldAnimate: true,
+        baseLayerPicker: false,
+        geocoder: false,
+        homeButton: false,
+        sceneModePicker: false,
+        timeline: false,
+        animation: false,
+      });
 
-        try {
-          const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);
-          const kml = await Cesium.KmlDataSource.load(kmlUrl);
-          viewer.dataSources.add(kml);
-        } catch (error) {
-          console.error("Ошибка загрузки KML:", error);
-        }
+      try {
+        const terrainProvider = await CesiumTerrainProvider.fromIonAssetId(1);
+        viewer.terrainProvider = terrainProvider;
+      } catch (terrainError) {
+        console.warn("Ошибка загрузки террейна:", terrainError);
+      }
 
-        const arButton = document.getElementById("enterAR");
-        let isARActive = false;
-        let xrSession = null;
+      try {
+        const kmlUrl = await IonResource.fromAssetId(3264517);
+        const kml = await KmlDataSource.load(kmlUrl);
+        viewer.dataSources.add(kml);
+      } catch (error) {
+        console.error("Ошибка загрузки KML:", error);
+      }
 
-        arButton.addEventListener("click", async () => {
-          if (!isARActive) {
-            if (!navigator.xr) {
-              alert("WebXR не поддерживается этим браузером/устройством.");
-              return;
-            }
+      const arButton = document.getElementById("enterAR");
+      let isARActive = false;
+      let xrSession = null;
 
-            const supported = await navigator.xr.isSessionSupported("immersive-ar");
-            if (!supported) {
-              alert("Ваше устройство не поддерживает WebXR AR.");
-              return;
-            }
-
-            try {
-              xrSession = await navigator.xr.requestSession("immersive-ar", {
-                requiredFeatures: ["local", "hit-test"],
-              });
-
-              const canvas = document.createElement("canvas");
-              canvas.style.position = "absolute";
-              canvas.style.top = 0;
-              canvas.style.left = 0;
-              canvas.style.width = "100%";
-              canvas.style.height = "100%";
-              canvas.style.zIndex = 1000;
-              document.body.appendChild(canvas);
-
-              const gl = canvas.getContext("webgl", { xrCompatible: true });
-
-              await xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
-
-              const refSpace = await xrSession.requestReferenceSpace("local");
-
-              const onXRFrame = (time, frame) => {
-                xrSession.requestAnimationFrame(onXRFrame);
-                // Здесь можно будет добавить отрисовку объектов
-              };
-
-              xrSession.requestAnimationFrame(onXRFrame);
-              isARActive = true;
-              arButton.textContent = "Выйти из AR";
-            } catch (e) {
-              console.error("Ошибка при запуске AR:", e);
-            }
-          } else {
-            if (xrSession) {
-              await xrSession.end();
-              xrSession = null;
-            }
-            isARActive = false;
-            arButton.textContent = "Перейти в AR";
+      arButton.addEventListener("click", async () => {
+        if (!isARActive) {
+          if (!navigator.xr) {
+            alert("WebXR не поддерживается этим браузером/устройством.");
+            return;
           }
-        });
+
+          const supported = await navigator.xr.isSessionSupported("immersive-ar");
+          if (!supported) {
+            alert("Ваше устройство не поддерживает WebXR AR.");
+            return;
+          }
+
+          try {
+            xrSession = await navigator.xr.requestSession("immersive-ar", {
+              requiredFeatures: ["local", "hit-test"],
+            });
+
+            const canvas = document.createElement("canvas");
+            canvas.style.position = "absolute";
+            canvas.style.top = 0;
+            canvas.style.left = 0;
+            canvas.style.width = "100%";
+            canvas.style.height = "100%";
+            canvas.style.zIndex = 1000;
+            document.body.appendChild(canvas);
+
+            const gl = canvas.getContext("webgl", { xrCompatible: true });
+
+            await xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+
+            const refSpace = await xrSession.requestReferenceSpace("local");
+
+            const onXRFrame = (time, frame) => {
+              xrSession.requestAnimationFrame(onXRFrame);
+              // Здесь можно будет добавить отрисовку объектов
+            };
+
+            xrSession.requestAnimationFrame(onXRFrame);
+            isARActive = true;
+            arButton.textContent = "Выйти из AR";
+          } catch (e) {
+            console.error("Ошибка при запуске AR:", e);
+          }
+        } else {
+          if (xrSession) {
+            await xrSession.end();
+            xrSession = null;
+          }
+          isARActive = false;
+          arButton.textContent = "Перейти в AR";
+        }
       });
     </script>
   </body>

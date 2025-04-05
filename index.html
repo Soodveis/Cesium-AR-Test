@@ -39,13 +39,11 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script type="module">
-      import { Ion, Viewer, IonResource, KmlDataSource, createWorldTerrain } from "https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/index.js";
-
-      Ion.defaultAccessToken =
+    <script>
+      Cesium.Ion.defaultAccessToken =
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-      const viewer = new Viewer("cesiumContainer", {
+      const viewer = new Cesium.Viewer("cesiumContainer", {
         shouldAnimate: true,
         baseLayerPicker: false,
         geocoder: false,
@@ -53,12 +51,11 @@
         sceneModePicker: false,
         timeline: false,
         animation: false,
+        terrainProvider: Cesium.createWorldTerrain(),
       });
 
-      viewer.terrainProvider = createWorldTerrain();
-
-      IonResource.fromAssetId(3264517)
-        .then((kmlUrl) => KmlDataSource.load(kmlUrl))
+      Cesium.IonResource.fromAssetId(3264517)
+        .then((kmlUrl) => Cesium.KmlDataSource.load(kmlUrl))
         .then((kml) => viewer.dataSources.add(kml))
         .catch((error) => console.error("Ошибка загрузки KML:", error));
 

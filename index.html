@@ -3,9 +3,9 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/cesium@1.109.0/Build/Cesium/Cesium.js"></script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://cdn.jsdelivr.net/npm/cesium@1.109.0/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>
@@ -39,15 +39,12 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script type="text/javascript">
+    <script>
       window.addEventListener("load", async () => {
         Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
-
         const viewer = new Cesium.Viewer("cesiumContainer", {
-          terrainProvider: terrainProvider,
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
@@ -55,6 +52,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
+          terrainProvider: Cesium.createWorldTerrain(),
         });
 
         try {

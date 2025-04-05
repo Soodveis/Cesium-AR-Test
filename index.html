@@ -41,10 +41,8 @@
         Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const terrainProvider = Cesium.createWorldTerrain?.() || new Cesium.EllipsoidTerrainProvider();
-
         const viewer = new Cesium.Viewer("cesiumContainer", {
-          terrainProvider,
+          terrainProvider: Cesium.createWorldTerrain(),
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
@@ -54,12 +52,10 @@
           animation: false,
         });
 
-        if (Cesium.IonResource && Cesium.IonResource.fromAssetId) {
-          Cesium.IonResource.fromAssetId(3264517)
-            .then((kmlUrl) => Cesium.KmlDataSource.load(kmlUrl))
-            .then((kml) => viewer.dataSources.add(kml))
-            .catch((error) => console.error("Ошибка загрузки KML:", error));
-        }
+        Cesium.IonResource.fromAssetId(3264517)
+          .then((kmlUrl) => Cesium.KmlDataSource.load(kmlUrl))
+          .then((kml) => viewer.dataSources.add(kml))
+          .catch((error) => console.error("Ошибка загрузки KML:", error));
 
         const arButton = document.getElementById("enterAR");
         let isARActive = false;

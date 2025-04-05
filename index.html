@@ -44,8 +44,6 @@
         Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
-
         const viewer = new Cesium.Viewer("cesiumContainer", {
           shouldAnimate: true,
           baseLayerPicker: false,
@@ -54,7 +52,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          terrainProvider: terrainProvider,
+          terrainProvider: await Cesium.CesiumTerrainProvider.fromIonAssetId(1),
         });
 
         try {
@@ -88,8 +86,15 @@
               });
 
               const canvas = document.createElement("canvas");
-              const gl = canvas.getContext("webgl", { xrCompatible: true });
+              canvas.style.position = "absolute";
+              canvas.style.top = 0;
+              canvas.style.left = 0;
+              canvas.style.width = "100%";
+              canvas.style.height = "100%";
+              canvas.style.zIndex = 1000;
               document.body.appendChild(canvas);
+
+              const gl = canvas.getContext("webgl", { xrCompatible: true });
 
               await xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
 

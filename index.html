@@ -52,8 +52,9 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          terrainProvider: Cesium.createWorldTerrain()
         });
+
+        viewer.terrainProvider = Cesium.createWorldTerrainAsync();
 
         try {
           const kmlUrl = await Cesium.IonResource.fromAssetId(3264517);

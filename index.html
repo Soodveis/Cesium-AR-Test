@@ -52,7 +52,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+          terrainProvider: Cesium.createWorldTerrain(),
         });
 
         try {

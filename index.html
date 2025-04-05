@@ -49,6 +49,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
+          imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }) // базовая карта
         });
 
         // Попытка установить рельеф
@@ -61,6 +62,7 @@
           }
         } catch (err) {
           console.error("Ошибка установки рельефа:", err);
+          viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
         }
 
         // Загрузка KML-данных, если доступна IonResource

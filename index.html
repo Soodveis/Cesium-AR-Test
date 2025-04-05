@@ -39,14 +39,10 @@
     <div id="cesiumContainer"></div>
     <button id="enterAR">Перейти в AR</button>
 
-    <script>
+    <script type="text/javascript">
       window.addEventListener("load", async () => {
         Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
-
-        Cesium.buildModuleUrl.setBaseUrl(
-          "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Build/Cesium/"
-        );
 
         const viewer = new Cesium.Viewer("cesiumContainer", {
           shouldAnimate: true,
@@ -89,7 +85,19 @@
                 requiredFeatures: ["local", "hit-test"],
               });
 
-              console.log("AR-сессия активна (тестовая заглушка)");
+              const canvas = document.createElement("canvas");
+              const gl = canvas.getContext("webgl", { xrCompatible: true });
+              document.body.appendChild(canvas);
+
+              await xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+
+              const refSpace = await xrSession.requestReferenceSpace("local");
+
+              const onXRFrame = (time, frame) => {
+                xrSession.requestAnimationFrame(onXRFrame);
+              };
+
+              xrSession.requestAnimationFrame(onXRFrame);
               isARActive = true;
               arButton.textContent = "Выйти из AR";
             } catch (e) {

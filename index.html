@@ -44,6 +44,10 @@
         Cesium.Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
+        Cesium.buildModuleUrl.setBaseUrl(
+          "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Build/Cesium/"
+        );
+
         const viewer = new Cesium.Viewer("cesiumContainer", {
           shouldAnimate: true,
           baseLayerPicker: false,
@@ -52,6 +56,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
+          terrainProvider: new Cesium.EllipsoidTerrainProvider(),
         });
 
         try {

@@ -51,17 +51,25 @@
           animation: false,
         });
 
-        // Используем createWorldTerrain только если он существует
-        if (Cesium.createWorldTerrain) {
-          viewer.terrainProvider = Cesium.createWorldTerrain();
-        } else {
-          console.warn("createWorldTerrain не поддерживается в этой версии Cesium.");
+        // Попытка установить рельеф
+        try {
+          if (Cesium.createWorldTerrain) {
+            viewer.terrainProvider = Cesium.createWorldTerrain();
+          } else {
+            console.warn("createWorldTerrain не поддерживается. Устанавливается EllipsoidTerrainProvider.");
+            viewer.terrainProvider = new Cesium.EllipsoidTerrainProvider();
+          }
+        } catch (err) {
+          console.error("Ошибка установки рельефа:", err);
         }
 
-        Cesium.IonResource.fromAssetId(3264517)
-          .then((resource) => Cesium.KmlDataSource.load(resource))
-          .then((kml) => viewer.dataSources.add(kml))
-          .catch((error) => console.error("Ошибка загрузки KML:", error));
+        // Загрузка KML-данных, если доступна IonResource
+        if (Cesium.IonResource && Cesium.IonResource.fromAssetId) {
+          Cesium.IonResource.fromAssetId(3264517)
+            .then((resource) => Cesium.KmlDataSource.load(resource))
+            .then((kml) => viewer.dataSources.add(kml))
+            .catch((error) => console.error("Ошибка загрузки KML:", error));
+        }
 
         const arButton = document.getElementById("enterAR");
         let isARActive = false;

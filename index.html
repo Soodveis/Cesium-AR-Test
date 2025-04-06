@@ -49,10 +49,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          imageryProvider: new Cesium.OpenStreetMapImageryProvider({
-            url : 'https://a.tile.openstreetmap.org/'
-          }),
-          terrainProvider: new Cesium.EllipsoidTerrainProvider()
+          terrainProvider: Cesium.createWorldTerrain()
         });
 
         Cesium.IonResource.fromAssetId(3264517)

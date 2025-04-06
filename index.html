@@ -49,14 +49,16 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
+          terrainProvider: Cesium.createWorldTerrain?.() || undefined
         });
 
-        viewer.terrainProvider = Cesium.createWorldTerrain();
-
-        Cesium.IonResource.fromAssetId(3264517)
-          .then(resource => Cesium.KmlDataSource.load(resource))
-          .then(kml => viewer.dataSources.add(kml))
-          .catch(error => console.error("Ошибка загрузки KML:", error));
+        try {
+          const resource = await Cesium.IonResource.fromAssetId(3264517);
+          const kml = await Cesium.KmlDataSource.load(resource);
+          viewer.dataSources.add(kml);
+        } catch (error) {
+          console.error("Ошибка загрузки KML:", error);
+        }
 
         const arButton = document.getElementById("enterAR");
         let isARActive = false;

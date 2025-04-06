@@ -48,22 +48,12 @@
           homeButton: false,
           sceneModePicker: false,
           timeline: false,
-          animation: false
+          animation: false,
+          imageryProvider: new Cesium.OpenStreetMapImageryProvider({
+            url : 'https://a.tile.openstreetmap.org/'
+          }),
+          terrainProvider: new Cesium.EllipsoidTerrainProvider()
         });
-
-        try {
-          const terrain = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
-          viewer.terrainProvider = terrain;
-        } catch (e) {
-          console.error("Ошибка создания рельефа:", e);
-        }
-
-        try {
-          const imageryProvider = await Cesium.IonImageryProvider.fromAssetId(2);
-          viewer.imageryLayers.addImageryProvider(imageryProvider);
-        } catch (e) {
-          console.error("Ошибка подключения базовой карты:", e);
-        }
 
         Cesium.IonResource.fromAssetId(3264517)
           .then(resource => Cesium.KmlDataSource.load(resource))

@@ -50,7 +50,7 @@
           timeline: false,
           animation: false,
           imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
-          terrainProvider: Cesium.createWorldTerrain()
+          terrainProvider: Cesium.EllipsoidTerrainProvider() // Временно убираем createWorldTerrain
         });
 
         Cesium.IonResource.fromAssetId(3264517)

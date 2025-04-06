@@ -43,7 +43,9 @@
 
         const viewer = new Cesium.Viewer("cesiumContainer", {
           terrainProvider: new Cesium.EllipsoidTerrainProvider(),
-          imageryProvider: Cesium.createWorldImagery(),
+          imageryProvider: new Cesium.UrlTemplateImageryProvider({
+            url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
+          }),
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,

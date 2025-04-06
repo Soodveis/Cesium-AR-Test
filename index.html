@@ -48,9 +48,15 @@
           homeButton: false,
           sceneModePicker: false,
           timeline: false,
-          animation: false,
-          imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 })
+          animation: false
         });
+
+        try {
+          const imageryProvider = await Cesium.IonImageryProvider.fromAssetId(2);
+          viewer.imageryLayers.addImageryProvider(imageryProvider);
+        } catch (e) {
+          console.error("Ошибка подключения базовой карты:", e);
+        }
 
         Cesium.IonResource.fromAssetId(3264517)
           .then(resource => Cesium.KmlDataSource.load(resource))
@@ -76,7 +82,7 @@
 
             try {
               xrSession = await navigator.xr.requestSession("immersive-ar", {
-                requiredFeatures: ["local", "hit-test"],
+                requiredFeatures: ["local", "hit-test"]
               });
 
               const canvas = document.createElement("canvas");

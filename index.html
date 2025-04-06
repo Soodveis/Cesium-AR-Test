@@ -48,9 +48,14 @@
           homeButton: false,
           sceneModePicker: false,
           timeline: false,
-          animation: false,
-          terrainProvider: Cesium.createWorldTerrain?.() || undefined
+          animation: false
         });
+
+        try {
+          viewer.terrainProvider = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+        } catch (terrainError) {
+          console.warn("Не удалось загрузить terrain: ", terrainError);
+        }
 
         try {
           const resource = await Cesium.IonResource.fromAssetId(3264517);

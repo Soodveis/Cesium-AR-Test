@@ -4,11 +4,13 @@
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
     <script type="module">
-      import { Ion, Viewer, IonImageryProvider, createWorldTerrain, KmlDataSource, IonResource } from "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Build/Cesium/Cesium.js";
+      import { Ion, Viewer, IonImageryProvider, createWorldTerrainAsync, KmlDataSource, IonResource } from "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Source/Cesium.js";
 
-      window.addEventListener("load", function () {
+      window.addEventListener("load", async function () {
         Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
+
+        const terrainProvider = await createWorldTerrainAsync();
 
         const viewer = new Viewer("cesiumContainer", {
           shouldAnimate: true,
@@ -19,7 +21,7 @@
           timeline: false,
           animation: false,
           imageryProvider: new IonImageryProvider({ assetId: 2 }),
-          terrainProvider: createWorldTerrain()
+          terrainProvider: terrainProvider
         });
 
         IonResource.fromAssetId(3264517)

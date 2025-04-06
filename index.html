@@ -52,6 +52,13 @@
         });
 
         try {
+          const worldTerrain = await Cesium.createWorldTerrainAsync();
+          viewer.terrainProvider = worldTerrain;
+        } catch (e) {
+          console.error("Ошибка создания рельефа:", e);
+        }
+
+        try {
           const imageryProvider = await Cesium.IonImageryProvider.fromAssetId(2);
           viewer.imageryLayers.addImageryProvider(imageryProvider);
         } catch (e) {

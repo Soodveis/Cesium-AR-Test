@@ -52,8 +52,8 @@
         });
 
         try {
-          const worldTerrain = await Cesium.createWorldTerrainAsync();
-          viewer.terrainProvider = worldTerrain;
+          const terrain = await Cesium.CesiumTerrainProvider.fromIonAssetId(1);
+          viewer.terrainProvider = terrain;
         } catch (e) {
           console.error("Ошибка создания рельефа:", e);
         }

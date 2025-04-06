@@ -49,7 +49,7 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          imageryProvider: Cesium.createWorldImagery()
+          imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 })
         });
 
         Cesium.IonResource.fromAssetId(3264517)

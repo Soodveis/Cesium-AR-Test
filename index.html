@@ -3,13 +3,14 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
-    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
-    <script>
+    <script type="module">
+      import { Ion, Viewer, IonImageryProvider, createWorldTerrain, KmlDataSource, IonResource } from "https://cdn.jsdelivr.net/npm/cesium@1.109.0/Source/Cesium.js";
+
       window.addEventListener("load", function () {
-        Cesium.Ion.defaultAccessToken =
+        Ion.defaultAccessToken =
           "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const viewer = new Cesium.Viewer("cesiumContainer", {
+        const viewer = new Viewer("cesiumContainer", {
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
@@ -17,12 +18,12 @@
           sceneModePicker: false,
           timeline: false,
           animation: false,
-          imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
-          terrainProvider: Cesium.createWorldTerrain()
+          imageryProvider: new IonImageryProvider({ assetId: 2 }),
+          terrainProvider: createWorldTerrain()
         });
 
-        Cesium.IonResource.fromAssetId(3264517)
-          .then((resource) => Cesium.KmlDataSource.load(resource))
+        IonResource.fromAssetId(3264517)
+          .then((resource) => KmlDataSource.load(resource))
           .then((kml) => viewer.dataSources.add(kml))
           .catch((error) => console.error("Ошибка загрузки KML:", error));
 
@@ -84,7 +85,7 @@
       });
     </script>
     <link
-      href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css"
+      href="https://cdn.jsdelivr.net/npm/cesium@1.109.0/Build/Cesium/Widgets/widgets.css"
       rel="stylesheet"
     />
     <style>

@@ -43,6 +43,7 @@
 
         const viewer = new Cesium.Viewer("cesiumContainer", {
           terrainProvider: Cesium.createWorldTerrain(),
+          imageryProvider: new Cesium.IonImageryProvider({ assetId: 2 }),
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,

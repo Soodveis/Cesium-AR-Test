@@ -4,8 +4,9 @@
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
 
-    <script src="https://unpkg.com/cesium/Build/Cesium/Cesium.js"></script>
-    <link href="https://unpkg.com/cesium/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+    <!-- Подключение Cesium через UMD-бандл -->
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.109/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
 
     <style>
       html, body, #cesiumContainer {
@@ -37,57 +38,83 @@
     <button id="enterAR">Перейти в AR</button>
 
     <script>
-      console.log("Cesium.js загружается...");
-
-      window.addEventListener("load", () => {
-        if (typeof Cesium === "undefined") {
-          console.error("Cesium не определен. Проверьте подключение скрипта Cesium.js.");
-          return;
-        }
-
-        Cesium.Ion.defaultAccessToken =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
+      window.addEventListener("load", async function () {
+        Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
         const viewer = new Cesium.Viewer("cesiumContainer", {
-          terrainProvider: Cesium.createWorldTerrain(),
+          terrainProvider: Cesium.Terrain.fromWorldTerrain(),
+          imageryProvider: new Cesium.IonImageryProvider({ assetId: 3 }),
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
           homeButton: false,
           sceneModePicker: false,
           timeline: false,
-          animation: false,
+          animation: false
         });
 
-        console.log("Цезий загружен");
+        try {
+          const resource = await Cesium.IonResource.fromAssetId(3264517);
+          const kml = await Cesium.KmlDataSource.load(resource);
+          viewer.dataSources.add(kml);
+          viewer.zoomTo(kml);
+        } catch (error) {
+          console.error("Ошибка загрузки KML:", error);
+        }
 
-        let isARActive = false;
         const arButton = document.getElementById("enterAR");
+        let isARActive = false;
+        let xrSession = null;
 
         arButton.addEventListener("click", async () => {
           if (!isARActive) {
-            if (navigator.xr && navigator.xr.isSessionSupported) {
-              const supported = await navigator.xr.isSessionSupported("immersive-ar");
-              if (!supported) {
-                alert("Ваше устройство не поддерживает WebXR AR.");
-                return;
-              }
+            if (!navigator.xr) {
+              alert("WebXR не поддерживается этим браузером/устройством.");
+              return;
+            }
+
+            const supported = await navigator.xr.isSessionSupported("immersive-ar");
+            if (!supported) {
+              alert("Ваше устройство не поддерживает WebXR AR.");
+              return;
             }
 
             try {
-              const session = await navigator.xr.requestSession("immersive-ar", {
-                requiredFeatures: ["local-floor"]
+              xrSession = await navigator.xr.requestSession("immersive-ar", {
+                requiredFeatures: ["local", "hit-test"]
               });
-              arButton.textContent = "Выйти из AR";
+
+              const canvas = document.createElement("canvas");
+              canvas.style.position = "absolute";
+              canvas.style.top = 0;
+              canvas.style.left = 0;
+              canvas.style.width = "100%";
+              canvas.style.height = "100%";
+              canvas.style.zIndex = 1000;
+              document.body.appendChild(canvas);
+
+              const gl = canvas.getContext("webgl", { xrCompatible: true });
+              await xrSession.updateRenderState({ baseLayer: new XRWebGLLayer(xrSession, gl) });
+
+              const refSpace = await xrSession.requestReferenceSpace("local");
+
+              const onXRFrame = (time, frame) => {
+                xrSession.requestAnimationFrame(onXRFrame);
+              };
+
+              xrSession.requestAnimationFrame(onXRFrame);
               isARActive = true;
-              document.body.requestFullscreen();
-            } catch (err) {
-              console.error("Ошибка запуска AR:", err);
+              arButton.textContent = "Выйти из AR";
+            } catch (e) {
+              console.error("Ошибка при запуске AR:", e);
             }
           } else {
+            if (xrSession) {
+              await xrSession.end();
+              xrSession = null;
+            }
             isARActive = false;
             arButton.textContent = "Перейти в AR";
-            document.exitFullscreen();
           }
         });
       });

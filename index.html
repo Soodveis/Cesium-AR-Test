@@ -43,8 +43,8 @@
 
         const viewer = new Cesium.Viewer("cesiumContainer", {
           terrainProvider: new Cesium.EllipsoidTerrainProvider(),
-          imageryProvider: Cesium.createTileMapServiceImageryProvider({
-            url: Cesium.buildModuleUrl("Assets/Textures/NaturalEarthII")
+          imageryProvider: new Cesium.UrlTemplateImageryProvider({
+            url: 'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png'
           }),
           shouldAnimate: true,
           baseLayerPicker: false,

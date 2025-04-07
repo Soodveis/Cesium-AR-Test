@@ -3,20 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cesium AR Viewer</title>
+
     <script src="https://unpkg.com/cesium/Build/Cesium/Cesium.js"></script>
-    <link
-      href="https://unpkg.com/cesium/Build/Cesium/Widgets/widgets.css"
-      rel="stylesheet"
-    />
+    <link href="https://unpkg.com/cesium/Build/Cesium/Widgets/widgets.css" rel="stylesheet" />
+
     <style>
-      html,
-      body,
-      #cesiumContainer {
+      html, body, #cesiumContainer {
         width: 100%;
         height: 100%;
         margin: 0;
         padding: 0;
         overflow: hidden;
+        background: black;
       }
 
       #enterAR {
@@ -48,9 +46,10 @@
         }
 
         Cesium.Ion.defaultAccessToken =
-          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI3YWU5YWQ4Yy04MWJhLTRiMjEtODlhYy1hMzBmMThjZGFlY2YiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDMyNDk4OTR9.XYyDBN_rm1I7n7X6iOIYvNpuCOLf9pkRh2b-Hg0XMyU";
+          "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
         const viewer = new Cesium.Viewer("cesiumContainer", {
+          terrainProvider: Cesium.createWorldTerrain(),
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,

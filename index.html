@@ -41,13 +41,8 @@
       window.addEventListener("load", async function () {
         Cesium.Ion.defaultAccessToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJiMzMwODc1MC1iYzZlLTRiNTUtYTQ2ZS0zZDA1NmM2ZDY3NjAiLCJpZCI6Mjg0NzkyLCJpYXQiOjE3NDM3MDU1MTZ9.XNw2h_MxBaU6QAWCf8oPFuvLC7i1Ti9G_P-8R2dm5eI";
 
-        const terrainProvider = new Cesium.CesiumTerrainProvider({
-          url: Cesium.IonResource.fromAssetId(1)
-        });
-
         const viewer = new Cesium.Viewer("cesiumContainer", {
-          terrainProvider: terrainProvider,
-          imageryProvider: Cesium.IonImageryProvider.fromAssetId(2),
+          terrainProvider: Cesium.createWorldTerrain(),
           shouldAnimate: true,
           baseLayerPicker: false,
           geocoder: false,
@@ -57,6 +52,7 @@
           animation: false
         });
 
+        viewer.scene.globe.enableLighting = true;
         viewer.scene.backgroundColor = Cesium.Color.BLACK;
 
         try {
